@@ -25,7 +25,6 @@ with timer("db_query"):
     results = db.execute(query)
 
 counter("api_calls").increment()
-
 report()
 ```
 ```
@@ -47,16 +46,18 @@ report()
 
 ## Why pytrackio?
 
-Sometimes you just need to know how fast your code runs — without setting up servers, installing agents, or managing infrastructure.
+Sometimes you just need to know how fast your code runs — without setting up
+servers, installing agents, or managing infrastructure.
 
-pytrackio is different. It runs **inside your process**, with **zero setup**, and gives you real numbers in seconds.
+pytrackio runs **inside your process**, requires **zero setup**, and gives you
+real answers in seconds.
 
 | Feature | pytrackio |
 |---|---|
 | Setup time | 30 seconds |
-| External server required | ❌ None |
+| External server required | None |
 | Dependencies | 0 |
-| Works in scripts & notebooks | ✅ |
+| Works in scripts and notebooks | ✅ |
 | p95 / p99 percentiles | ✅ |
 | Async support | ✅ |
 | Thread-safe | ✅ |
@@ -68,7 +69,7 @@ pytrackio is different. It runs **inside your process**, with **zero setup**, an
 pip install pytrackio
 ```
 
-**Requirements:** Python 3.10+ · Zero external dependencies
+Requirements: Python 3.10+ · Zero external dependencies
 
 ---
 
@@ -82,12 +83,10 @@ from pytrackio import track
 def fetch_user(user_id: int):
     ...
 
-# Works with async too
 @track
 async def send_notification(user_id: int):
     await mailer.send(...)
 
-# Custom metric name
 @track(name="payment_gateway")
 def charge_card(amount: float):
     ...
@@ -104,7 +103,6 @@ from pytrackio import timer
 with timer("image_resize"):
     resized = resize_image(img, width=800)
 
-# Async blocks too
 async with timer("external_api"):
     result = await fetch_data()
 ```
@@ -129,9 +127,9 @@ print(counter("cache_hits").value)
 ```python
 from pytrackio import report
 
-report()                       # full report to stdout
-report(show_counters=False)    # hide counters
-report(colour=False)           # plain text (good for log files)
+report()
+report(show_counters=False)
+report(colour=False)
 ```
 
 Returns the report as a string for logging or alerting.
@@ -142,9 +140,9 @@ Returns the report as a string for logging or alerting.
 ```python
 from pytrackio import export_json, export_csv, export_dict
 
-export_json("metrics.json")   # write to file
-export_csv("metrics.csv")     # write to file
-data = export_dict()          # Python dict for custom dashboards
+export_json("metrics.json")
+export_csv("metrics.csv")
+data = export_dict()
 ```
 
 ---
@@ -159,7 +157,7 @@ for s in registry.all_summaries():
     if s.error_rate > 5.0:
         alert(f"{s.name} error rate: {s.error_rate:.1f}%")
 
-registry.reset()   # clear all metrics
+registry.reset()
 ```
 
 ---
@@ -180,7 +178,6 @@ async def checkout(cart_id: int) -> str:
     counter("orders_placed").increment()
     return result["order_id"]
 
-# After processing a batch:
 report()
 ```
 
@@ -189,22 +186,22 @@ report()
 ## How it works
 ```
 Your code
-   │
-   ├── @track / timer()  ──▶  records duration + error per call
-   │
-   ├── counter()         ──▶  named integer counters
-   │
-   └── MetricsRegistry   ──▶  thread-safe, in-process dict
-                                        │
+   |
+   |-- @track / timer()  -->  records duration + error per call
+   |
+   |-- counter()         -->  named integer counters
+   |
+   +-- MetricsRegistry   -->  thread-safe, in-process dict
+                                        |
                               report() / export_json() / export_csv()
 ```
 
 | Concern | Approach |
 |---|---|
-| Thread safety | `threading.Lock` on every registry write |
+| Thread safety | threading.Lock on every registry write |
 | Memory | In-process only — no disk, no network |
 | Exceptions | Always re-raised — pytrackio never hides errors |
-| Async | Native `async with` and `async def` support |
+| Async | Native async with and async def support |
 
 ---
 
@@ -222,7 +219,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Author
 
-**Deepanshu** — Python Developer & Open Source Author.  
+**Deepanshu** — Python Developer and Open Source Author.  
 Creator of pytrackio. Building tools that solve real problems for real developers.
 
 ---
