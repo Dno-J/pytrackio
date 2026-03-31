@@ -47,19 +47,19 @@ report()
 
 ## Why pytrackio?
 
-Most observability tools demand you spin up Prometheus, configure Grafana, install agents, and manage infrastructure — just to answer "how slow is my function?"
+Sometimes you just need to know how fast your code runs — without setting up servers, installing agents, or managing infrastructure.
 
 pytrackio is different. It runs **inside your process**, with **zero setup**, and gives you real numbers in seconds.
 
-| Feature | pytrackio | Prometheus | StatsD |
-|---|---|---|---|
-| Setup time | 30 seconds | Hours | 30+ minutes |
-| External server | ❌ None | ✅ Required | ✅ Required |
-| Dependencies | 0 | Many | Several |
-| Works in scripts | ✅ | ❌ | ❌ |
-| p95 / p99 percentiles | ✅ | ✅ | ❌ |
-| Async support | ✅ | ✅ | ✅ |
-| Thread-safe | ✅ | ✅ | ✅ |
+| Feature | pytrackio |
+|---|---|
+| Setup time | 30 seconds |
+| External server required | ❌ None |
+| Dependencies | 0 |
+| Works in scripts & notebooks | ✅ |
+| p95 / p99 percentiles | ✅ |
+| Async support | ✅ |
+| Thread-safe | ✅ |
 
 ---
 
