@@ -1,264 +1,232 @@
-# pytrackio
+# ⚡ pytrackio
 
-> Zero-dependency Python performance tracker. Decorate, time, count — then report.
+**The fastest way to add performance tracking to any Python project.**  
+One decorator. Zero dependencies. No servers. No config. Just answers.
 
 [![Tests](https://github.com/danshu3007-lang/pytrackio/actions/workflows/tests.yml/badge.svg)](https://github.com/danshu3007-lang/pytrackio/actions)
 [![PyPI version](https://img.shields.io/pypi/v/pytrackio?style=flat-square&color=blue)](https://pypi.org/project/pytrackio/)
-[![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen?style=flat-square)](pyproject.toml)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 
+---
+```python
+pip install pytrackio
+```
 ```python
 from pytrackio import track, timer, counter, report
 
 @track
-def fetch_user(user_id: int):
-    ...  # your existing code, unchanged
+def process_order(order_id):
+    ...
 
-with timer("database_query"):
+with timer("db_query"):
     results = db.execute(query)
 
 counter("api_calls").increment()
 
 report()
 ```
-
 ```
-╔════════════════════════════════════════════════════════════════════════╗
-║                   pytrackio  —  Performance Report                     ║
-║  uptime: 4.21s                                                         ║
-╠════════════════════════════════════════════════════════════════════════╣
-║ Function / Block             Calls  Avg (ms)   Min(ms)  Max (ms)  Errors ║
-╠════════════════════════════════════════════════════════════════════════╣
-║ fetch_user                      42    120.34     98.10    310.50  —      ║
-║ database_query                  18     45.20     40.10     89.30  —      ║
-╠════════════════════════════════════════════════════════════════════════╣
-║ Counters                                                               ║
-╠────────────────────────────────────────────────────────────────────────╣
-║   api_calls:  42                                                       ║
-╚════════════════════════════════════════════════════════════════════════╝
+================================================================================
+  pytrackio — Performance Report         uptime: 4.21s
+================================================================================
+  Name                         Calls      Avg      Min      Max      p95      p99  Errors
+--------------------------------------------------------------------------------
+  process_order                   42   120.34    98.10   310.50   290.10   308.40       —
+  db_query                        18    45.20    40.10    89.30    87.20    89.10       —
+--------------------------------------------------------------------------------
+  Counters
+--------------------------------------------------------------------------------
+  api_calls: 42
+================================================================================
 ```
 
 ---
 
 ## Why pytrackio?
 
-Every other Python metrics tool requires Prometheus, StatsD, Grafana, or some external server. Setting them up takes hours.
+Most observability tools demand you spin up Prometheus, configure Grafana, install agents, and manage infrastructure — just to answer "how slow is my function?"
 
-**pytrackio works in 30 seconds:**
-- ✅ Zero dependencies — pure Python stdlib only
-- ✅ Zero configuration — no config files, no servers
-- ✅ Zero changes to your logic — just add one decorator
-- ✅ Thread-safe — works in concurrent applications
-- ✅ Production-ready — proper error tracking, not just happy-path
+pytrackio is different. It runs **inside your process**, with **zero setup**, and gives you real numbers in seconds.
+
+| Feature | pytrackio | Prometheus | StatsD |
+|---|---|---|---|
+| Setup time | 30 seconds | Hours | 30+ minutes |
+| External server | ❌ None | ✅ Required | ✅ Required |
+| Dependencies | 0 | Many | Several |
+| Works in scripts | ✅ | ❌ | ❌ |
+| p95 / p99 percentiles | ✅ | ✅ | ❌ |
+| Async support | ✅ | ✅ | ✅ |
+| Thread-safe | ✅ | ✅ | ✅ |
 
 ---
 
 ## Installation
-
 ```bash
 pip install pytrackio
 ```
+
+**Requirements:** Python 3.10+ · Zero external dependencies
 
 ---
 
 ## Usage
 
-### Track a function automatically
-
+### `@track` — decorate any function
 ```python
 from pytrackio import track
 
 @track
-def process_order(order_id: int):
-    # your code here — nothing else changes
+def fetch_user(user_id: int):
     ...
 
-# Call it normally
-process_order(123)
-process_order(456)
-```
+# Works with async too
+@track
+async def send_notification(user_id: int):
+    await mailer.send(...)
 
-### Custom metric name
-
-```python
+# Custom metric name
 @track(name="payment_gateway")
 def charge_card(amount: float):
     ...
 ```
 
-### Time any block of code
+Tracks: call count · avg / min / max / p95 / p99 latency · error count · error rate
 
+---
+
+### `timer()` — track any code block
 ```python
 from pytrackio import timer
 
 with timer("image_resize"):
     resized = resize_image(img, width=800)
 
-with timer("send_email"):
-    mailer.send(to=user.email, body=html)
+# Async blocks too
+async with timer("external_api"):
+    result = await fetch_data()
 ```
 
-### Count events
+---
 
+### `counter()` — named event counters
 ```python
 from pytrackio import counter
 
 counter("cache_hits").increment()
-counter("cache_misses").increment()
-counter("retries").increment(3)    # increment by N
-counter("queue_size").decrement()  # decrement
+counter("retries").increment(3)
+counter("queue_size").decrement()
+counter("requests").reset()
 
-# Read the value anywhere
 print(counter("cache_hits").value)
 ```
 
-### Print the report
+---
 
+### `report()` — print everything
 ```python
 from pytrackio import report
 
-report()                        # print to stdout
-report(show_counters=False)     # hide counters section
+report()                       # full report to stdout
+report(show_counters=False)    # hide counters
+report(colour=False)           # plain text (good for log files)
 ```
 
-### Access raw data programmatically
+Returns the report as a string for logging or alerting.
 
+---
+
+### Export data
+```python
+from pytrackio import export_json, export_csv, export_dict
+
+export_json("metrics.json")   # write to file
+export_csv("metrics.csv")     # write to file
+data = export_dict()          # Python dict for custom dashboards
+```
+
+---
+
+### Raw registry access
 ```python
 from pytrackio import get_registry
 
 registry = get_registry()
 
-# Get summary for one metric
-s = registry.summary("payment_gateway")
-print(s.calls, s.avg_ms, s.error_rate)
-
-# Get all summaries
 for s in registry.all_summaries():
     if s.error_rate > 5.0:
-        alert(f"{s.name} has {s.error_rate}% errors!")
+        alert(f"{s.name} error rate: {s.error_rate:.1f}%")
 
-# Reset between test runs
-registry.reset()
+registry.reset()   # clear all metrics
 ```
 
 ---
 
 ## Real-world example
-
 ```python
 from pytrackio import track, timer, counter, report
-import requests as http
 
 @track
-def get_weather(city: str) -> dict:
-    r = http.get(f"https://api.example.com/weather?city={city}", timeout=5)
-    r.raise_for_status()
-    counter("api_calls").increment()
-    return r.json()
+def get_product(product_id: int) -> dict:
+    counter("db_reads").increment()
+    return db.query(Product).get(product_id)
 
 @track
-def process_weather(data: dict) -> str:
-    with timer("format_output"):
-        return f"{data['city']}: {data['temp']}°C"
+async def checkout(cart_id: int) -> str:
+    with timer("payment"):
+        result = await payment_gateway.charge(cart_id)
+    counter("orders_placed").increment()
+    return result["order_id"]
 
-# Run your app...
-for city in ["Delhi", "London", "Tokyo"]:
-    data = get_weather(city)
-    print(process_weather(data))
-
-# See how everything performed
+# After processing a batch:
 report()
 ```
 
 ---
 
-## API Reference
-
-### `@track`
-
-```python
-@track
-def my_func(): ...
-
-@track(name="custom_name")
-def my_func(): ...
+## How it works
+```
+Your code
+   │
+   ├── @track / timer()  ──▶  records duration + error per call
+   │
+   ├── counter()         ──▶  named integer counters
+   │
+   └── MetricsRegistry   ──▶  thread-safe, in-process dict
+                                        │
+                              report() / export_json() / export_csv()
 ```
 
-Tracks: call count, duration (min/max/avg), errors and error rate.
-Never swallows exceptions — your original errors always propagate.
-
----
-
-### `timer(name)`
-
-```python
-with timer("block_name"):
-    ...
-```
-
-Context manager. Records duration and any exceptions raised inside the block.
-
----
-
-### `counter(name)`
-
-```python
-counter("name").increment()       # +1
-counter("name").increment(n)      # +n
-counter("name").decrement()       # -1
-counter("name").reset()           # → 0
-counter("name").value             # read current value
-```
-
----
-
-### `report(stream, colour, show_counters)`
-
-```python
-report()
-report(show_counters=False)
-report(colour=False)              # force plain text
-```
-
-Prints to stdout and returns the output as a string.
-
----
-
-### `get_registry()`
-
-Returns the global `MetricsRegistry` instance for programmatic access.
-
-```python
-registry = get_registry()
-registry.all_summaries()          # List[MetricSummary]
-registry.all_counters()           # List[CounterState]
-registry.summary("name")          # Optional[MetricSummary]
-registry.reset()                  # clear everything
-registry.uptime_seconds()         # float
-```
+| Concern | Approach |
+|---|---|
+| Thread safety | `threading.Lock` on every registry write |
+| Memory | In-process only — no disk, no network |
+| Exceptions | Always re-raised — pytrackio never hides errors |
+| Async | Native `async with` and `async def` support |
 
 ---
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-**Ideas for contributions:**
-- Async support (`@track` for `async def` functions)
-- Export to JSON / CSV
-- Histogram bucketing
-- `@track` for class methods
-- Minimum call threshold filter in report
+See [CONTRIBUTING.md](CONTRIBUTING.md) — PRs welcome.
 
 ---
 
-## Built by
+## Changelog
 
-**Deepanshu** — BCA Student at Chandigarh University, aspiring Data Analyst.
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+---
+
+## Author
+
+**Deepanshu** — Python Developer & Open Source Author.  
+Creator of pytrackio. Building tools that solve real problems for real developers.
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — free to use, modify, and distribute.
