@@ -20,7 +20,7 @@ All 27 tests must pass before opening a PR.
 - `@track` support for class methods
 - `reset_after=N` parameter — auto-reset registry after N calls
 - Structured logging output (JSON lines format)
-- GitHub Actions badge for PyPI publish workflow
+- Histogram bucketing for latency distributions
 
 ## Pull request checklist
 
