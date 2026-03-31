@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytrackio"
+version = "0.1.0"
+description = "Zero-dependency Python performance tracker. Decorate, time, count — then report."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["metrics","performance","tracking","profiling","monitoring","decorator","timer"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+]
+
+[project.urls]
+Homepage = "https://github.com/danshu3007-lang/pytrackio"
+Repository = "https://github.com/danshu3007-lang/pytrackio"
+"Bug Tracker" = "https://github.com/danshu3007-lang/pytrackio/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pytrackio*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
