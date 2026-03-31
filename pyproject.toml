@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytrackio"
-version = "0.3.0"
+version = "0.4.0"
 description = "Zero-dependency Python performance tracker. Decorate, time, count — then report."
 readme = "README.md"
 license = "MIT"
