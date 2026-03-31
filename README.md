@@ -1,6 +1,6 @@
 # ⚡ pytrackio
 
-**The fastest way to add performance tracking to any Python project.**  
+**The fastest way to add performance tracking to any Python project.**
 One decorator. Zero dependencies. No servers. No config. Just answers.
 
 [![Tests](https://github.com/danshu3007-lang/pytrackio/actions/workflows/tests.yml/badge.svg)](https://github.com/danshu3007-lang/pytrackio/actions)
@@ -29,12 +29,12 @@ report()
 ```
 ```
 ================================================================================
-  pytrackio — Performance Report         uptime: 4.21s
+  pytrackio - Performance Report         uptime: 4.21s
 ================================================================================
   Name                         Calls      Avg      Min      Max      p95      p99  Errors
 --------------------------------------------------------------------------------
-  process_order                   42   120.34    98.10   310.50   290.10   308.40       —
-  db_query                        18    45.20    40.10    89.30    87.20    89.10       —
+  process_order                   42   120.34    98.10   310.50   290.10   308.40       -
+  db_query                        18    45.20    40.10    89.30    87.20    89.10       -
 --------------------------------------------------------------------------------
   Counters
 --------------------------------------------------------------------------------
@@ -46,10 +46,10 @@ report()
 
 ## Why pytrackio?
 
-Sometimes you just need to know how fast your code runs — without setting up
+Sometimes you just need to know how fast your code runs, without setting up
 servers, installing agents, or managing infrastructure.
 
-pytrackio runs **inside your process**, requires **zero setup**, and gives you
+pytrackio runs inside your process, requires zero setup, and gives you
 real answers in seconds.
 
 | Feature | pytrackio |
@@ -57,10 +57,10 @@ real answers in seconds.
 | Setup time | 30 seconds |
 | External server required | None |
 | Dependencies | 0 |
-| Works in scripts and notebooks | ✅ |
-| p95 / p99 percentiles | ✅ |
-| Async support | ✅ |
-| Thread-safe | ✅ |
+| Works in scripts and notebooks | Yes |
+| p95 and p99 percentiles | Yes |
+| Async support | Yes |
+| Thread-safe | Yes |
 
 ---
 
@@ -69,13 +69,13 @@ real answers in seconds.
 pip install pytrackio
 ```
 
-Requirements: Python 3.10+ · Zero external dependencies
+Requirements: Python 3.10+ and zero external dependencies.
 
 ---
 
 ## Usage
 
-### `@track` — decorate any function
+### @track - decorate any function
 ```python
 from pytrackio import track
 
@@ -92,11 +92,11 @@ def charge_card(amount: float):
     ...
 ```
 
-Tracks: call count · avg / min / max / p95 / p99 latency · error count · error rate
+Tracks call count, avg, min, max, p95, p99 latency, error count, and error rate.
 
 ---
 
-### `timer()` — track any code block
+### timer() - track any code block
 ```python
 from pytrackio import timer
 
@@ -109,7 +109,7 @@ async with timer("external_api"):
 
 ---
 
-### `counter()` — named event counters
+### counter() - named event counters
 ```python
 from pytrackio import counter
 
@@ -123,7 +123,7 @@ print(counter("cache_hits").value)
 
 ---
 
-### `report()` — print everything
+### report() - print everything
 ```python
 from pytrackio import report
 
@@ -155,7 +155,7 @@ registry = get_registry()
 
 for s in registry.all_summaries():
     if s.error_rate > 5.0:
-        alert(f"{s.name} error rate: {s.error_rate:.1f}%")
+        print(f"{s.name} error rate: {s.error_rate:.1f}%")
 
 registry.reset()
 ```
@@ -183,47 +183,25 @@ report()
 
 ---
 
-## How it works
-```
-Your code
-   |
-   |-- @track / timer()  -->  records duration + error per call
-   |
-   |-- counter()         -->  named integer counters
-   |
-   +-- MetricsRegistry   -->  thread-safe, in-process dict
-                                        |
-                              report() / export_json() / export_csv()
-```
-
-| Concern | Approach |
-|---|---|
-| Thread safety | threading.Lock on every registry write |
-| Memory | In-process only — no disk, no network |
-| Exceptions | Always re-raised — pytrackio never hides errors |
-| Async | Native async with and async def support |
-
----
-
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) — PRs welcome.
+See CONTRIBUTING.md - PRs welcome.
 
 ---
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for version history.
+See CHANGELOG.md for version history.
 
 ---
 
 ## Author
 
-**Deepanshu** — Python Developer and Open Source Author.  
+**Deepanshu** - Python Developer and Open Source Author.
 Creator of pytrackio. Building tools that solve real problems for real developers.
 
 ---
 
 ## License
 
-[MIT](LICENSE) — free to use, modify, and distribute.
+MIT - free to use, modify, and distribute.
