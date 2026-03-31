@@ -285,7 +285,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## 👨‍💻 Author
 
-**Deepanshu** — BCA Student at Chandigarh University, aspiring Data Analyst.
+**Deepanshu** — Data Analyst.
 
 Building real tools to learn production-grade Python.
 
