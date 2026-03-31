@@ -255,7 +255,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Built by
 
-**Deepanshu** — Data Analyst.
+**Deepanshu** — BCA Student at Chandigarh University, aspiring Data Analyst.
 
 ---
 
