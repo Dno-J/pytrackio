@@ -1,203 +1,89 @@
-"""
-MetricsRegistry — thread-safe, in-process metrics store.
-Supports sync and async tracking, percentiles, counters, and export.
-"""
-
 from __future__ import annotations
-
-import math
 import threading
 import time
-from dataclasses import dataclass, field
-from typing import Dict, Iterator, List, Optional
-
-
-# ---------------------------------------------------------------------------
-# Data structures
-# ---------------------------------------------------------------------------
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 
 @dataclass
-class Summary:
-    """Immutable snapshot of a single tracked metric."""
+class MetricSummary:
     name: str
     calls: int
     errors: int
-    total_ms: float
-    durations_ms: List[float]  # kept for percentile calculation
-
-    @property
-    def avg_ms(self) -> float:
-        return self.total_ms / self.calls if self.calls else 0.0
-
-    @property
-    def min_ms(self) -> float:
-        return min(self.durations_ms) if self.durations_ms else 0.0
-
-    @property
-    def max_ms(self) -> float:
-        return max(self.durations_ms) if self.durations_ms else 0.0
-
-    @property
-    def error_rate(self) -> float:
-        return (self.errors / self.calls * 100) if self.calls else 0.0
-
-    def percentile(self, p: float) -> float:
-        """Return the p-th percentile latency (0–100)."""
-        if not self.durations_ms:
-            return 0.0
-        sorted_d = sorted(self.durations_ms)
-        k = (len(sorted_d) - 1) * p / 100
-        lo, hi = int(math.floor(k)), int(math.ceil(k))
-        if lo == hi:
-            return sorted_d[lo]
-        return sorted_d[lo] + (sorted_d[hi] - sorted_d[lo]) * (k - lo)
-
-    @property
-    def p95_ms(self) -> float:
-        return self.percentile(95)
-
-    @property
-    def p99_ms(self) -> float:
-        return self.percentile(99)
-
-
-@dataclass
-class _MetricData:
-    """Mutable internal record for a tracked function/block."""
-    name: str
-    calls: int = 0
-    errors: int = 0
-    total_ms: float = 0.0
-    durations_ms: List[float] = field(default_factory=list)
-
-    def record(self, duration_ms: float, error: bool = False) -> None:
-        self.calls += 1
-        self.total_ms += duration_ms
-        self.durations_ms.append(duration_ms)
-        if error:
-            self.errors += 1
-
-    def to_summary(self) -> Summary:
-        return Summary(
-            name=self.name,
-            calls=self.calls,
-            errors=self.errors,
-            total_ms=self.total_ms,
-            durations_ms=list(self.durations_ms),
-        )
-
-
-# ---------------------------------------------------------------------------
-# Counter
-# ---------------------------------------------------------------------------
+    avg_ms: float
+    min_ms: float
+    max_ms: float
+    p95_ms: float
+    p99_ms: float
+    error_rate: float
 
 class Counter:
-    """A named integer counter, safe for concurrent use."""
-
     def __init__(self, name: str) -> None:
-        self._name = name
+        self.name = name
         self._value = 0
         self._lock = threading.Lock()
-
-    @property
-    def name(self) -> str:
-        return self._name
-
     @property
     def value(self) -> int:
-        with self._lock:
-            return self._value
+        with self._lock: return self._value
+    def increment(self, n: int = 1) -> None:
+        with self._lock: self._value += n
+    def decrement(self, n: int = 1) -> None:
+        with self._lock: self._value -= n
+    def reset(self) -> None:
+        with self._lock: self._value = 0
 
-    def increment(self, by: int = 1) -> "Counter":
-        with self._lock:
-            self._value += by
-        return self
-
-    def decrement(self, by: int = 1) -> "Counter":
-        with self._lock:
-            self._value -= by
-        return self
-
-    def reset(self) -> "Counter":
-        with self._lock:
-            self._value = 0
-        return self
-
-
-# ---------------------------------------------------------------------------
-# Registry
-# ---------------------------------------------------------------------------
+def _percentile(s: List[float], p: float) -> float:
+    if not s: return 0.0
+    n = len(s)
+    if n == 1: return s[0]
+    idx = (p / 100.0) * (n - 1)
+    lo = int(idx)
+    hi = lo + 1
+    if hi >= n: return s[-1]
+    return s[lo] + (idx - lo) * (s[hi] - s[lo])
 
 class MetricsRegistry:
-    """
-    Central, thread-safe store for all pytrackio metrics.
-
-    One global instance is created at import time; you can also
-    instantiate isolated registries for testing.
-    """
-
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._metrics: Dict[str, _MetricData] = {}
+        self._samples: Dict[str, List[float]] = {}
+        self._errors: Dict[str, int] = {}
         self._counters: Dict[str, Counter] = {}
-        self._start_time: float = time.monotonic()
-
-    # ------------------------------------------------------------------
-    # Metrics (timings)
-    # ------------------------------------------------------------------
-
+        self._start = time.monotonic()
     def record(self, name: str, duration_ms: float, error: bool = False) -> None:
-        """Record a single timing observation."""
         with self._lock:
-            if name not in self._metrics:
-                self._metrics[name] = _MetricData(name=name)
-            self._metrics[name].record(duration_ms, error)
-
-    def summary(self, name: str) -> Optional[Summary]:
-        """Return a snapshot for a single metric, or None if not found."""
-        with self._lock:
-            data = self._metrics.get(name)
-            return data.to_summary() if data else None
-
-    def all_summaries(self) -> List[Summary]:
-        """Return snapshots for every tracked metric."""
-        with self._lock:
-            return [d.to_summary() for d in self._metrics.values()]
-
-    # ------------------------------------------------------------------
-    # Counters
-    # ------------------------------------------------------------------
-
+            if name not in self._samples:
+                self._samples[name] = []
+                self._errors[name] = 0
+            self._samples[name].append(duration_ms)
+            if error: self._errors[name] += 1
     def counter(self, name: str) -> Counter:
-        """Retrieve (or create) a named counter."""
         with self._lock:
             if name not in self._counters:
                 self._counters[name] = Counter(name)
             return self._counters[name]
-
-    def all_counters(self) -> List[Counter]:
+    def summary(self, name: str) -> Optional[MetricSummary]:
         with self._lock:
-            return list(self._counters.values())
-
-    # ------------------------------------------------------------------
-    # Housekeeping
-    # ------------------------------------------------------------------
-
+            samples = self._samples.get(name)
+            if not samples: return None
+            return self._build(name, list(samples), self._errors.get(name, 0))
+    def all_summaries(self) -> List[MetricSummary]:
+        with self._lock:
+            return [self._build(n, list(s), self._errors.get(n, 0))
+                    for n, s in self._samples.items()]
+    def all_counters(self) -> Dict[str, int]:
+        with self._lock:
+            return {n: c.value for n, c in self._counters.items()}
+    def _build(self, name, samples, errors) -> MetricSummary:
+        s = sorted(samples)
+        c = len(s)
+        return MetricSummary(name=name, calls=c, errors=errors,
+            avg_ms=sum(s)/c, min_ms=s[0], max_ms=s[-1],
+            p95_ms=_percentile(s, 95), p99_ms=_percentile(s, 99),
+            error_rate=100.0*errors/c if c else 0.0)
     def reset(self) -> None:
-        """Clear all metrics and counters (useful between test runs)."""
         with self._lock:
-            self._metrics.clear()
-            self._counters.clear()
-            self._start_time = time.monotonic()
-
+            self._samples.clear(); self._errors.clear()
+            self._counters.clear(); self._start = time.monotonic()
     def uptime_seconds(self) -> float:
-        return time.monotonic() - self._start_time
+        return time.monotonic() - self._start
 
-
-# Singleton used by all public API functions
-_GLOBAL_REGISTRY = MetricsRegistry()
-
-
-def get_registry() -> MetricsRegistry:
-    """Return the global MetricsRegistry instance."""
-    return _GLOBAL_REGISTRY
+_REGISTRY = MetricsRegistry()

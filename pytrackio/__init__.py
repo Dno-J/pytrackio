@@ -1,46 +1,18 @@
-"""
-pytrackio
-=========
-Zero-dependency Python performance tracker.
+from ._registry import _REGISTRY, MetricSummary, MetricsRegistry
+from ._track import track
+from ._timer import timer
+from ._report import report, export_json, export_csv, export_dict
 
-Track function calls, timings, and errors with a single decorator.
-No external servers. No configuration. Just import and use.
+def counter(name: str):
+    return _REGISTRY.counter(name)
 
-Basic usage::
+def get_registry() -> MetricsRegistry:
+    return _REGISTRY
 
-    from pytrackio import track, timer, counter, report
-
-    @track
-    def my_function():
-        ...
-
-    with timer("block_name"):
-        do_something()
-
-    counter("events").increment()
-
-    report()   # print summary table
-
-"""
-
-from ._instruments import counter, timer, track
-from ._report import report
-from ._tracker import MetricSummary, get_registry
-
-__version__ = "0.1.0"
+__version__ = "0.5.0"
 __author__  = "Deepanshu"
 __license__ = "MIT"
 
-__all__ = [
-    # Instrumentation
-    "track",
-    "timer",
-    "counter",
-    # Reporting
-    "report",
-    # Advanced / programmatic access
-    "get_registry",
-    "MetricSummary",
-    # Meta
-    "__version__",
-]
+__all__ = ["track", "timer", "counter", "report", "export_json",
+           "export_csv", "export_dict", "get_registry", "MetricSummary",
+           "MetricsRegistry", "__version__"]
