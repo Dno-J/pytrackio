@@ -6,7 +6,7 @@ def report(*, show_counters=True, colour=True):
     summaries=_REGISTRY.all_summaries()
     counters=_REGISTRY.all_counters() if show_counters else {}
     W="="*80; lines=[W,f"  pytrackio — Performance Report    uptime: {_REGISTRY.uptime_seconds():.2f}s",W]
-    if not summaries:
+    if not summaries and not counters:
         lines+=["  No metrics recorded yet.",W]; out="\n".join(lines); print(out); return out
     lines.append(f"  {'Name':<28}{'Calls':>6}{'Avg':>9}{'Min':>9}{'Max':>9}{'p95':>9}{'p99':>9}{'Errors':>8}")
     lines.append("-"*80)

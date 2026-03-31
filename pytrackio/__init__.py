@@ -9,7 +9,7 @@ def counter(name):
 def get_registry():
     return _REGISTRY
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 __author__ = "Deepanshu"
 __license__ = "MIT"
 __all__ = ["track","timer","counter","report","export_json","export_csv","export_dict","get_registry","MetricSummary","MetricsRegistry","__version__"]
