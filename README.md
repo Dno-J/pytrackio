@@ -1,5 +1,12 @@
 # ⚡ pytrackio
 
+[![Showcase](https://img.shields.io/badge/showcase-live-7c6af7?style=flat-square)](https://danshu3007-lang.github.io/pytrackio/)
+
+> 📖 **[View the full showcase & docs →](https://danshu3007-lang.github.io/pytrackio/)**
+
+---
+
+
 **The fastest way to add performance tracking to any Python project.**
 One decorator. Zero dependencies. No servers. No config. Just answers.
 
