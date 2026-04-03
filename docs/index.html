@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pytrackio — Zero-Dependency Python Performance Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --accent:#7c6af7;--accent2:#4fd1c5;--accent3:#f6ad55;
+  --text:#e8e6f0;--muted:#6e6b80;--border:rgba(255,255,255,0.08);
+  --card:rgba(255,255,255,0.04);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:15px;line-height:1.6;overflow-x:hidden}
+
+/* ── Nav ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:0.5px solid var(--border);padding:0 2rem}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:52px}
+.nav-logo{font-family:'Fraunces',serif;font-size:1.1rem;color:#fff;text-decoration:none;display:flex;align-items:center;gap:6px}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{font-size:13px;background:var(--accent);color:#fff;padding:6px 16px;border-radius:6px;text-decoration:none;font-weight:500;transition:background 0.2s}
+.nav-cta:hover{background:#6b59e8}
+
+/* ── Hero ── */
+.hero{padding:5rem 2rem 3.5rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 55% at 50% 0%,rgba(124,106,247,0.18) 0%,transparent 65%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(124,106,247,0.12);border:0.5px solid rgba(124,106,247,0.3);color:#a89ef8;font-size:12px;font-family:'DM Mono',monospace;padding:4px 14px;border-radius:20px;margin-bottom:1.5rem;letter-spacing:0.05em}
+.dot{width:6px;height:6px;border-radius:50%;background:#7c6af7;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+h1{font-family:'Fraunces',serif;font-size:clamp(2.4rem,6vw,4rem);font-weight:600;line-height:1.08;letter-spacing:-0.025em;color:#fff;margin-bottom:1rem}
+h1 em{color:var(--accent);font-style:normal}
+.tagline{font-size:1.1rem;color:var(--muted);max-width:540px;margin:0 auto 2.5rem;line-height:1.7}
+.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;font-family:'Instrument Sans',sans-serif;transition:all 0.2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#6b59e8;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text);border:0.5px solid var(--border)}
+.btn-ghost:hover{border-color:rgba(255,255,255,0.2);background:var(--card)}
+.install-strip{display:inline-flex;align-items:center;gap:10px;background:var(--bg3);border:0.5px solid var(--border);border-radius:8px;padding:10px 20px;font-family:'DM Mono',monospace;font-size:14px;color:var(--accent2);cursor:pointer;user-select:all;transition:border-color 0.2s}
+.install-strip:hover{border-color:rgba(79,209,197,0.35)}
+.install-strip .cmd{color:#fff}
+.copy-hint{font-size:11px;color:var(--muted);margin-left:4px}
+
+/* ── Stats bar ── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;max-width:720px;margin:0 auto}
+.stat{background:var(--bg2);padding:1.4rem 1rem;text-align:center}
+.stat-val{font-family:'Fraunces',serif;font-size:1.5rem;color:#fff;font-weight:600}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:0.03em}
+
+/* ── Layout ── */
+.section{padding:3rem 2rem;max-width:900px;margin:0 auto}
+.sec-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:10px}
+.sec-label::after{content:'';flex:1;height:0.5px;background:var(--border)}
+h2{font-family:'Fraunces',serif;font-size:1.9rem;font-weight:600;color:#fff;margin-bottom:0.5rem;letter-spacing:-0.015em}
+.sub{color:var(--muted);font-size:0.95rem;margin-bottom:2rem}
+.divider{height:0.5px;background:var(--border);margin:0 2rem}
+
+/* ── Video placeholder ── */
+.video-wrap{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;margin-bottom:2rem;color:var(--muted);font-size:14px;cursor:pointer;transition:border-color 0.2s;position:relative;overflow:hidden;text-decoration:none}
+.video-wrap::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(124,106,247,0.08),transparent);pointer-events:none}
+.video-wrap:hover{border-color:rgba(124,106,247,0.45)}
+.play-btn{width:64px;height:64px;border-radius:50%;background:rgba(124,106,247,0.2);border:0.5px solid rgba(124,106,247,0.45);display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+.video-wrap:hover .play-btn{background:rgba(124,106,247,0.35)}
+.play-arrow{width:0;height:0;border-top:11px solid transparent;border-bottom:11px solid transparent;border-left:20px solid var(--accent);margin-left:5px}
+.video-label{color:var(--text);font-size:15px;font-weight:500}
+.video-sub{font-size:13px;color:var(--muted)}
+
+/* ── Code blocks ── */
+.demo-box{background:var(--bg2);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.demo-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:0.5px solid var(--border);background:var(--bg3)}
+.demo-dots{display:flex;gap:6px}
+.demo-dots span{width:11px;height:11px;border-radius:50%}
+.demo-dots span:nth-child(1){background:#ff5f57}
+.demo-dots span:nth-child(2){background:#febc2e}
+.demo-dots span:nth-child(3){background:#28c840}
+.demo-fname{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-left:4px}
+pre{padding:1.5rem;font-family:'DM Mono',monospace;font-size:13px;line-height:1.9;overflow-x:auto;background:transparent;tab-size:4}
+.kw{color:#c792ea}.fn{color:#82aaff}.str{color:#4fd1c5}.cm{color:#546e7a;font-style:italic}.dec{color:#f6ad55}.op{color:#89ddff}.num{color:#f78c6c}
+
+/* ── Output ── */
+.output-box{background:#060608;border:0.5px solid var(--border);border-radius:12px;padding:1.5rem;font-family:'DM Mono',monospace;font-size:12.5px;line-height:2;color:#a8b2d8;overflow-x:auto;margin-bottom:2rem}
+.out-head{color:var(--accent)}.out-row{color:#ccd6f6}.out-val{color:var(--accent2)}
+
+/* ── API cards ── */
+.api-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:12px;margin-bottom:2rem}
+.api-card{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:1.35rem;transition:border-color 0.2s,background 0.2s}
+.api-card:hover{border-color:rgba(124,106,247,0.4);background:rgba(124,106,247,0.07)}
+.api-name{font-family:'DM Mono',monospace;font-size:15px;color:#fff;margin-bottom:6px;font-weight:500}
+.api-badge{display:inline-block;font-size:10px;font-family:'DM Mono',monospace;padding:2px 9px;border-radius:4px;margin-bottom:10px;letter-spacing:0.03em}
+.badge-dec{background:rgba(246,173,85,0.14);color:var(--accent3)}
+.badge-ctx{background:rgba(79,209,197,0.12);color:var(--accent2)}
+.badge-fn{background:rgba(124,106,247,0.14);color:#a89ef8}
+.api-desc{font-size:13px;color:var(--muted);line-height:1.55}
+code{font-size:11px;background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:3px;font-family:'DM Mono',monospace}
+
+/* ── Features ── */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:12px;margin-bottom:2rem}
+.feat{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:1.35rem}
+.feat-icon{font-size:20px;margin-bottom:10px}
+.feat-title{font-size:14px;color:#fff;font-weight:500;margin-bottom:5px}
+.feat-text{font-size:13px;color:var(--muted);line-height:1.55}
+
+/* ── Comparison table ── */
+.compare-wrap{overflow-x:auto;margin-bottom:2rem;border-radius:10px;border:0.5px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:10px 14px;color:var(--muted);font-weight:500;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;border-bottom:0.5px solid var(--border);background:var(--bg3)}
+thead th:first-child{border-radius:0}
+tbody td{padding:10px 14px;border-bottom:0.5px solid rgba(255,255,255,0.04)}
+tbody tr:last-child td{border-bottom:none}
+tbody td:first-child{color:var(--text);font-weight:500}
+.hl{background:rgba(255,255,255,0.02)}
+.tick{color:#28c840}.cross{color:#ff5f57}.na{color:var(--muted)}
+.highlight-col{color:var(--accent2) !important;font-weight:500}
+
+/* ── Examples ── */
+.example-tabs{display:flex;gap:2px;margin-bottom:1px;background:var(--bg3);border:0.5px solid var(--border);border-radius:10px 10px 0 0;overflow:hidden;padding:6px 6px 0}
+.tab-btn{font-family:'DM Mono',monospace;font-size:11px;padding:7px 14px;border-radius:6px 6px 0 0;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s}
+.tab-btn.active{background:var(--bg2);color:var(--text)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.tab-panel{background:var(--bg2);border:0.5px solid var(--border);border-top:none;border-radius:0 0 12px 12px;overflow:hidden}
+
+/* ── Contribute ── */
+.contrib-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:2rem}
+.contrib-item{background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:1rem;transition:border-color 0.2s}
+.contrib-item:hover{border-color:rgba(255,255,255,0.15)}
+.diff-label{font-size:10px;font-family:'DM Mono',monospace;margin-bottom:5px;letter-spacing:0.04em}
+.diff-easy{color:var(--accent2)}.diff-med{color:var(--accent3)}.diff-hard{color:#fc8181}
+.contrib-name{font-size:13px;color:#fff;font-weight:500;margin-bottom:3px}
+.contrib-desc{font-size:12px;color:var(--muted);line-height:1.4}
+
+/* ── CTA ── */
+.cta{background:linear-gradient(135deg,rgba(124,106,247,0.14),rgba(79,209,197,0.08));border:0.5px solid rgba(124,106,247,0.22);border-radius:16px;padding:3rem 2rem;text-align:center;margin:1rem 0 4rem}
+.cta h3{font-family:'Fraunces',serif;font-size:1.8rem;color:#fff;margin-bottom:0.6rem;font-weight:600}
+.cta p{color:var(--muted);margin-bottom:2rem;font-size:1rem}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ── Footer ── */
+footer{border-top:0.5px solid var(--border);padding:2rem;text-align:center;font-size:13px;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--text)}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat:nth-child(4),.stat:nth-child(5){display:none}
+  nav .nav-links{display:none}
+  h1{font-size:2rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#"><span>⚡</span> pytrackio</a>
+    <ul class="nav-links">
+      <li><a href="#quickstart">Quick start</a></li>
+      <li><a href="#api">API</a></li>
+      <li><a href="#examples">Examples</a></li>
+      <li><a href="#compare">Compare</a></li>
+      <li><a href="#contribute">Contribute</a></li>
+    </ul>
+    <a class="nav-cta" href="https://github.com/danshu3007-lang/pytrackio" target="_blank">GitHub →</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="badge"><span class="dot"></span>v1.0 · MIT · Zero dependencies</div>
+  <h1>⚡ <em>pytrackio</em></h1>
+  <p class="tagline">Zero-dependency Python performance tracker. Decorate, time, count — then report. No servers. No config. Just Python.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="https://github.com/danshu3007-lang/pytrackio" target="_blank">View on GitHub →</a>
+    <a class="btn btn-ghost" href="https://pypi.org/project/pytrackio/" target="_blank">PyPI →</a>
+  </div>
+  <div class="install-strip"><span class="cmd">pip install</span> pytrackio <span class="copy-hint">click to copy</span></div>
+  <div class="stats" style="margin-top:3rem">
+    <div class="stat"><div class="stat-val">30s</div><div class="stat-lbl">Setup Time</div></div>
+    <div class="stat"><div class="stat-val">Zero</div><div class="stat-lbl">Dependencies</div></div>
+    <div class="stat"><div class="stat-val">3.10+</div><div class="stat-lbl">Python</div></div>
+    <div class="stat"><div class="stat-val">Yes</div><div class="stat-lbl">Thread Safe</div></div>
+    <div class="stat"><div class="stat-val">MIT</div><div class="stat-lbl">License</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Demo video -->
+<div class="section" id="demo">
+  <div class="sec-label">Demo</div>
+  <h2>See it in action</h2>
+  <p class="sub">Watch pytrackio track a real Python pipeline from zero to report.</p>
+  <a class="video-wrap" href="https://github.com/danshu3007-lang/pytrackio" target="_blank">
+    <div class="play-btn"><div class="play-arrow"></div></div>
+    <div class="video-label">Watch the demo video</div>
+    <div class="video-sub">pytrackio_demo.mp4 · github.com/danshu3007-lang/pytrackio</div>
+  </a>
+</div>
+
+<div class="divider"></div>
+
+<!-- Quick start -->
+<div class="section" id="quickstart">
+  <div class="sec-label">Quick start</div>
+  <h2>From zero to metrics in 60 seconds</h2>
+  <p class="sub">Copy this, run it, see your first performance report.</p>
+  <div class="demo-box">
+    <div class="demo-bar">
+      <div class="demo-dots"><span></span><span></span><span></span></div>
+      <span class="demo-fname">hello_pytrackio.py</span>
+    </div>
+    <pre><span class="kw">from</span> pytrackio <span class="kw">import</span> track, timer, counter, report
+
+<span class="cm"># 1. Decorate any function</span>
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">fetch_user</span>(user_id: int) <span class="op">-></span> dict:
+    <span class="kw">return</span> {<span class="str">"id"</span>: user_id, <span class="str">"name"</span>: <span class="str">f"User-{user_id}"</span>}
+
+<span class="cm"># 2. Time any block of code</span>
+<span class="kw">with</span> <span class="fn">timer</span>(<span class="str">"data_processing"</span>):
+    users <span class="op">=</span> [<span class="fn">fetch_user</span>(i) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">20</span>)]
+
+<span class="cm"># 3. Named counters</span>
+<span class="fn">counter</span>(<span class="str">"api_calls"</span>).<span class="fn">increment</span>(<span class="num">20</span>)
+
+<span class="cm"># 4. See everything</span>
+<span class="fn">report</span>()</pre>
+  </div>
+  <div class="output-box"><span class="out-head">╔══════════════════════════════════════════════════════════════╗
+║   pytrackio  —  Performance Report        uptime: 0.03s     ║
+╠══════════════════════════════════════════════════════════════╣
+║ Function / Block       Calls   Avg(ms)   Min(ms)   Max(ms)  ║
+╠══════════════════════════════════════════════════════════════╣
+</span><span class="out-row">║ fetch_user                20      0.01      0.01      0.04  ║
+║ data_processing            1      0.31      0.31      0.31  ║
+</span><span class="out-head">╠══════════════════════════════════════════════════════════════╣
+║ Counters                                                     ║
+╠──────────────────────────────────────────────────────────────╣
+</span><span class="out-val">║   api_calls:  20                                             ║
+</span><span class="out-head">╚══════════════════════════════════════════════════════════════╝</span></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- API Reference -->
+<div class="section" id="api">
+  <div class="sec-label">API reference</div>
+  <h2>Four primitives, infinite visibility</h2>
+  <p class="sub">Everything pytrackio exposes — no hidden complexity.</p>
+  <div class="api-grid">
+    <div class="api-card">
+      <div class="api-name">@track</div>
+      <div class="api-badge badge-dec">decorator</div>
+      <div class="api-desc">Wrap any function to auto-record call count, avg/min/max timing, and error rate. Exceptions always propagate. Supports <code>@track(name="custom")</code> for clean metric names.</div>
+    </div>
+    <div class="api-card">
+      <div class="api-name">timer()</div>
+      <div class="api-badge badge-ctx">context manager</div>
+      <div class="api-desc">Measure any arbitrary code block. Perfect for DB queries, API calls, file I/O, or any multi-line operation. Nested timers fully supported.</div>
+    </div>
+    <div class="api-card">
+      <div class="api-name">counter()</div>
+      <div class="api-badge badge-fn">named object</div>
+      <div class="api-desc">Thread-safe integer counters. Created on first use, no declaration needed. Methods: <code>.increment(n)</code> <code>.decrement(n)</code> <code>.reset()</code> <code>.value</code></div>
+    </div>
+    <div class="api-card">
+      <div class="api-name">report()</div>
+      <div class="api-badge badge-fn">formatter</div>
+      <div class="api-desc">Print a formatted table of all metrics. <code>report(colour=False)</code> for log files. Returns the report as a string for custom logging or storage.</div>
+    </div>
+    <div class="api-card">
+      <div class="api-name">get_registry()</div>
+      <div class="api-badge badge-fn">accessor</div>
+      <div class="api-desc">Direct access to the MetricsRegistry singleton. Iterate all summaries, build alerting pipelines, and call <code>.reset()</code> between test runs.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Real-world examples -->
+<div class="section" id="examples">
+  <div class="sec-label">Examples</div>
+  <h2>Real-world use cases</h2>
+  <p class="sub">Complete, runnable examples across five domains.</p>
+
+  <div class="example-tabs" id="tabs">
+    <button class="tab-btn active" onclick="switchTab(0)">E-Commerce</button>
+    <button class="tab-btn" onclick="switchTab(1)">ML Pipeline</button>
+    <button class="tab-btn" onclick="switchTab(2)">FastAPI</button>
+    <button class="tab-btn" onclick="switchTab(3)">Kaggle</button>
+    <button class="tab-btn" onclick="switchTab(4)">Alerting</button>
+  </div>
+
+  <div class="tab-content active" id="tab-0">
+    <div class="tab-panel">
+      <div class="demo-bar" style="border-top:none;border-radius:0">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span class="demo-fname">ecommerce_pipeline.py</span>
+      </div>
+      <pre><span class="kw">from</span> pytrackio <span class="kw">import</span> track, timer, counter, report
+<span class="kw">import</span> time, random
+
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">validate_cart</span>(cart_id: str) <span class="op">-></span> bool:
+    time.<span class="fn">sleep</span>(random.<span class="fn">uniform</span>(<span class="num">0.01</span>, <span class="num">0.05</span>))
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="dec">@track</span>(name=<span class="str">"payment_gateway"</span>)
+<span class="kw">def</span> <span class="fn">charge_card</span>(amount: float, token: str) <span class="op">-></span> dict:
+    time.<span class="fn">sleep</span>(random.<span class="fn">uniform</span>(<span class="num">0.08</span>, <span class="num">0.20</span>))
+    <span class="kw">if</span> random.<span class="fn">random</span>() <span class="op">&lt;</span> <span class="num">0.05</span>:  <span class="cm"># 5% failure rate</span>
+        <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="str">"Card declined"</span>)
+    <span class="fn">counter</span>(<span class="str">"revenue_cents"</span>).<span class="fn">increment</span>(<span class="fn">int</span>(amount <span class="op">*</span> <span class="num">100</span>))
+    <span class="kw">return</span> {<span class="str">"status"</span>: <span class="str">"captured"</span>}
+
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">send_confirmation_email</span>(email: str) <span class="op">-></span> <span class="kw">None</span>:
+    time.<span class="fn">sleep</span>(random.<span class="fn">uniform</span>(<span class="num">0.02</span>, <span class="num">0.04</span>))
+    <span class="fn">counter</span>(<span class="str">"emails_sent"</span>).<span class="fn">increment</span>()
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">100</span>):
+    <span class="kw">with</span> <span class="fn">timer</span>(<span class="str">"full_order_pipeline"</span>):
+        <span class="kw">try</span>:
+            <span class="fn">validate_cart</span>(<span class="str">f"CART-{i:04d}"</span>)
+            <span class="fn">charge_card</span>(<span class="num">49.99</span>, <span class="str">f"tok_{i}"</span>)
+            <span class="fn">send_confirmation_email</span>(<span class="str">f"customer{i}@example.com"</span>)
+            <span class="fn">counter</span>(<span class="str">"orders_completed"</span>).<span class="fn">increment</span>()
+        <span class="kw">except</span> ValueError:
+            <span class="fn">counter</span>(<span class="str">"orders_failed"</span>).<span class="fn">increment</span>()
+
+<span class="fn">report</span>()
+<span class="cm"># error_rate on payment_gateway shows ~5%</span>
+<span class="cm"># avg_ms on full_order_pipeline = end-to-end latency</span></pre>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-1">
+    <div class="tab-panel">
+      <div class="demo-bar" style="border-top:none;border-radius:0">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span class="demo-fname">ml_pipeline.py</span>
+      </div>
+      <pre><span class="kw">from</span> pytrackio <span class="kw">import</span> track, timer, counter, report
+<span class="kw">import</span> time, random
+
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">load_dataset</span>(path: str) <span class="op">-></span> list:
+    time.<span class="fn">sleep</span>(<span class="num">0.12</span>)
+    <span class="fn">counter</span>(<span class="str">"rows_ingested"</span>).<span class="fn">increment</span>(<span class="num">50_000</span>)
+    <span class="kw">return</span> <span class="fn">list</span>(<span class="fn">range</span>(<span class="num">50_000</span>))
+
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">engineer_features</span>(data: list) <span class="op">-></span> list:
+    time.<span class="fn">sleep</span>(<span class="num">0.09</span>)  <span class="cm"># often the slowest step</span>
+    <span class="kw">return</span> [x <span class="op">/</span> <span class="fn">len</span>(data) <span class="kw">for</span> x <span class="kw">in</span> data]
+
+<span class="dec">@track</span>(name=<span class="str">"model_training"</span>)
+<span class="kw">def</span> <span class="fn">train_model</span>(features: list, labels: list) <span class="op">-></span> dict:
+    time.<span class="fn">sleep</span>(<span class="num">0.45</span>)
+    <span class="fn">counter</span>(<span class="str">"models_trained"</span>).<span class="fn">increment</span>()
+    <span class="kw">return</span> {<span class="str">"accuracy"</span>: <span class="num">0.923</span>, <span class="str">"f1_score"</span>: <span class="num">0.918</span>}
+
+<span class="kw">with</span> <span class="fn">timer</span>(<span class="str">"end_to_end_pipeline"</span>):
+    raw <span class="op">=</span> <span class="fn">load_dataset</span>(<span class="str">"/data/train.csv"</span>)
+    features <span class="op">=</span> <span class="fn">engineer_features</span>(raw)
+    metrics <span class="op">=</span> <span class="fn">train_model</span>(features, labels)
+
+<span class="fn">report</span>()
+<span class="cm"># model_training is ~45% of total pipeline time</span></pre>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-2">
+    <div class="tab-panel">
+      <div class="demo-bar" style="border-top:none;border-radius:0">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span class="demo-fname">fastapi_app.py</span>
+      </div>
+      <pre><span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+<span class="kw">from</span> pytrackio <span class="kw">import</span> track, counter, get_registry
+
+app <span class="op">=</span> <span class="fn">FastAPI</span>()
+
+<span class="cm"># Use sync helpers — @track doesn't support async def yet</span>
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">_get_user_logic</span>(user_id: int) <span class="op">-></span> dict:
+    <span class="fn">counter</span>(<span class="str">"user_reads"</span>).<span class="fn">increment</span>()
+    <span class="kw">return</span> {<span class="str">"id"</span>: user_id, <span class="str">"name"</span>: <span class="str">f"User-{user_id}"</span>}
+
+<span class="dec">@app.get</span>(<span class="str">"/users/{user_id}"</span>)
+<span class="kw">async def</span> <span class="fn">get_user</span>(user_id: int):
+    <span class="kw">return</span> <span class="fn">_get_user_logic</span>(user_id)
+
+<span class="dec">@app.get</span>(<span class="str">"/metrics"</span>)
+<span class="kw">def</span> <span class="fn">get_metrics</span>():
+    <span class="cm"># Expose live metrics — add auth before production!</span>
+    registry <span class="op">=</span> <span class="fn">get_registry</span>()
+    <span class="kw">return</span> {
+        <span class="str">"uptime_seconds"</span>: registry.<span class="fn">uptime_seconds</span>(),
+        <span class="str">"functions"</span>: [
+            {<span class="str">"name"</span>: s.name, <span class="str">"calls"</span>: s.calls,
+             <span class="str">"avg_ms"</span>: <span class="fn">round</span>(s.avg_ms, <span class="num">2</span>),
+             <span class="str">"error_rate"</span>: <span class="fn">round</span>(s.error_rate, <span class="num">2</span>)}
+            <span class="kw">for</span> s <span class="kw">in</span> registry.<span class="fn">all_summaries</span>()
+        ]
+    }
+<span class="cm"># uvicorn fastapi_app:app --reload</span></pre>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-3">
+    <div class="tab-panel">
+      <div class="demo-bar" style="border-top:none;border-radius:0">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span class="demo-fname">kaggle_pipeline.py</span>
+      </div>
+      <pre><span class="kw">from</span> pytrackio <span class="kw">import</span> track, timer, counter, report
+<span class="kw">import</span> time, random
+
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">load_train_csv</span>(path: str) <span class="op">-></span> dict:
+    time.<span class="fn">sleep</span>(<span class="num">0.08</span>)
+    <span class="fn">counter</span>(<span class="str">"train_rows"</span>).<span class="fn">increment</span>(<span class="num">10_000</span>)
+    <span class="kw">return</span> {<span class="str">"shape"</span>: (<span class="num">10_000</span>, <span class="num">47</span>)}
+
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">feature_engineering</span>(train, test) <span class="op">-></span> tuple:
+    time.<span class="fn">sleep</span>(<span class="num">0.15</span>)  <span class="cm"># often the slowest step</span>
+    <span class="kw">return</span> train, test
+
+<span class="dec">@track</span>(name=<span class="str">"xgboost_cv"</span>)
+<span class="kw">def</span> <span class="fn">cross_validate</span>(data, folds: int <span class="op">=</span> <span class="num">5</span>) <span class="op">-></span> float:
+    time.<span class="fn">sleep</span>(<span class="num">0.6</span> <span class="op">*</span> folds <span class="op">/</span> <span class="num">5</span>)
+    <span class="fn">counter</span>(<span class="str">"cv_folds_run"</span>).<span class="fn">increment</span>(folds)
+    <span class="kw">return</span> <span class="num">0.82</span> <span class="op">+</span> random.<span class="fn">uniform</span>(<span class="op">-</span><span class="num">0.02</span>, <span class="num">0.02</span>)
+
+BASE <span class="op">=</span> <span class="str">"/kaggle/input/competition"</span>
+<span class="kw">with</span> <span class="fn">timer</span>(<span class="str">"full_competition_pipeline"</span>):
+    train <span class="op">=</span> <span class="fn">load_train_csv</span>(<span class="str">f"{BASE}/train.csv"</span>)
+    test <span class="op">=</span> <span class="fn">load_train_csv</span>(<span class="str">f"{BASE}/test.csv"</span>)
+    train, test <span class="op">=</span> <span class="fn">feature_engineering</span>(train, test)
+    score <span class="op">=</span> <span class="fn">cross_validate</span>(train, folds<span class="op">=</span><span class="num">5</span>)
+    <span class="fn">print</span>(<span class="str">f"CV Score: {score:.4f}"</span>)
+
+<span class="fn">report</span>()
+<span class="cm"># Immediately see: feature_engineering + xgboost_cv are bottlenecks</span></pre>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-4">
+    <div class="tab-panel">
+      <div class="demo-bar" style="border-top:none;border-radius:0">
+        <div class="demo-dots"><span></span><span></span><span></span></div>
+        <span class="demo-fname">production_alerting.py</span>
+      </div>
+      <pre><span class="kw">from</span> pytrackio <span class="kw">import</span> track, get_registry, counter
+<span class="kw">import</span> threading, time, random
+
+ERROR_RATE_THRESHOLD <span class="op">=</span> <span class="num">5.0</span>   <span class="cm"># percent</span>
+LATENCY_THRESHOLD_MS <span class="op">=</span> <span class="num">500</span>   <span class="cm"># milliseconds</span>
+
+<span class="kw">def</span> <span class="fn">continuous_monitor</span>() <span class="op">-></span> <span class="kw">None</span>:
+    registry <span class="op">=</span> <span class="fn">get_registry</span>()
+    <span class="kw">while</span> <span class="kw">True</span>:
+        <span class="kw">for</span> s <span class="kw">in</span> registry.<span class="fn">all_summaries</span>():
+            <span class="kw">if</span> s.error_rate <span class="op">></span> ERROR_RATE_THRESHOLD:
+                <span class="fn">print</span>(<span class="str">f"[CRITICAL] {s.name}: {s.error_rate:.1f}% errors"</span>)
+            <span class="kw">if</span> s.avg_ms <span class="op">></span> LATENCY_THRESHOLD_MS:
+                <span class="fn">print</span>(<span class="str">f"[WARNING] {s.name}: {s.avg_ms:.0f}ms latency"</span>)
+        time.<span class="fn">sleep</span>(<span class="num">30</span>)
+
+<span class="cm"># Start as daemon — dies with the main process</span>
+threading.<span class="fn">Thread</span>(target<span class="op">=</span>continuous_monitor, daemon<span class="op">=</span><span class="kw">True</span>).<span class="fn">start</span>()
+
+<span class="dec">@track</span>
+<span class="kw">def</span> <span class="fn">process_payment</span>(txn_id: str, amount: float) <span class="op">-></span> bool:
+    time.<span class="fn">sleep</span>(random.<span class="fn">uniform</span>(<span class="num">0.05</span>, <span class="num">0.6</span>))
+    <span class="kw">if</span> random.<span class="fn">random</span>() <span class="op">&lt;</span> <span class="num">0.08</span>:  <span class="cm"># 8% — will trigger alert</span>
+        <span class="kw">raise</span> <span class="fn">RuntimeError</span>(<span class="str">"Payment processor timeout"</span>)
+    <span class="kw">return</span> <span class="kw">True</span></pre>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Design principles -->
+<div class="section">
+  <div class="sec-label">Design principles</div>
+  <h2>Built to stay out of your way</h2>
+  <p class="sub">Every technical decision is deliberate.</p>
+  <div class="feature-grid">
+    <div class="feat">
+      <div class="feat-icon">🔒</div>
+      <div class="feat-title">Thread safe</div>
+      <div class="feat-text">threading.Lock guards every write. Works with gunicorn, uvicorn, any multi-threaded server.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🌐</div>
+      <div class="feat-title">Zero network</div>
+      <div class="feat-text">All data stays in-process. No HTTP, no disk, no sockets. Nothing can fail or add latency.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Exception transparency</div>
+      <div class="feat-text">pytrackio records the error and re-raises it. It never hides your bugs — it counts them.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">💡</div>
+      <div class="feat-title">Memory efficient</div>
+      <div class="feat-text">Single in-process dict. 10M calls across 1,000 functions stays well under 5 MB.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Comparison -->
+<div class="section" id="compare">
+  <div class="sec-label">Comparison</div>
+  <h2>pytrackio vs the alternatives</h2>
+  <p class="sub">Choose the right tool for your context.</p>
+  <div class="compare-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th style="color:var(--accent2)">pytrackio</th>
+          <th>Prometheus</th>
+          <th>StatsD</th>
+          <th>Datadog</th>
+          <th>cProfile</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hl">
+          <td>Setup time</td>
+          <td class="highlight-col">30 seconds</td>
+          <td class="na">Hours</td>
+          <td class="na">30 min</td>
+          <td class="na">Hours</td>
+          <td class="na">0 sec</td>
+        </tr>
+        <tr>
+          <td>pip packages needed</td>
+          <td class="highlight-col">1</td>
+          <td class="na">2+</td>
+          <td class="na">1+</td>
+          <td class="na">3+</td>
+          <td class="na">0</td>
+        </tr>
+        <tr class="hl">
+          <td>External server</td>
+          <td><span class="tick">✓</span> None</td>
+          <td><span class="cross">✗</span> Yes</td>
+          <td><span class="cross">✗</span> Yes</td>
+          <td><span class="cross">✗</span> Yes</td>
+          <td><span class="tick">✓</span> None</td>
+        </tr>
+        <tr>
+          <td>Zero dependencies</td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="tick">✓</span></td>
+        </tr>
+        <tr class="hl">
+          <td>Error tracking</td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="tick">✓</span></td>
+          <td class="na">Limited</td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Production ready</td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr class="hl">
+          <td>Thread safe</td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="tick">✓</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Contributing -->
+<div class="section" id="contribute">
+  <div class="sec-label">Contribute</div>
+  <h2>Good first issues — open now</h2>
+  <p class="sub">Pick a scope that matches your experience level. Every PR welcome.</p>
+  <div class="contrib-grid">
+    <div class="contrib-item">
+      <div class="diff-label diff-easy">Easy</div>
+      <div class="contrib-name">@track for class methods</div>
+      <div class="contrib-desc">OOP projects can't use it today — well-scoped first PR</div>
+    </div>
+    <div class="contrib-item">
+      <div class="diff-label diff-easy">Easy</div>
+      <div class="contrib-name">JSON / CSV export</div>
+      <div class="contrib-desc">report() as structured data for logging pipelines</div>
+    </div>
+    <div class="contrib-item">
+      <div class="diff-label diff-easy">Easy</div>
+      <div class="contrib-name">Better docstrings</div>
+      <div class="contrib-desc">Improve IDE autocomplete and type hints</div>
+    </div>
+    <div class="contrib-item">
+      <div class="diff-label diff-easy">Easy</div>
+      <div class="contrib-name">More real-world examples</div>
+      <div class="contrib-desc">Help newcomers understand use cases fast</div>
+    </div>
+    <div class="contrib-item">
+      <div class="diff-label diff-med">Medium</div>
+      <div class="contrib-name">Async @track support</div>
+      <div class="contrib-desc">The #1 open gap — modern Python is async</div>
+    </div>
+    <div class="contrib-item">
+      <div class="diff-label diff-med">Medium</div>
+      <div class="contrib-name">p95 / p99 latency</div>
+      <div class="contrib-desc">Critical for SLA monitoring in production</div>
+    </div>
+    <div class="contrib-item">
+      <div class="diff-label diff-med">Medium</div>
+      <div class="contrib-name">HTML dashboard report</div>
+      <div class="contrib-desc">Beautiful shareable reports for stakeholders</div>
+    </div>
+    <div class="contrib-item">
+      <div class="diff-label diff-hard">Hard</div>
+      <div class="contrib-name">Prometheus adapter</div>
+      <div class="contrib-desc">Bridge to existing monitoring stacks</div>
+    </div>
+  </div>
+
+  <div class="demo-box">
+    <div class="demo-bar">
+      <div class="demo-dots"><span></span><span></span><span></span></div>
+      <span class="demo-fname">contribute in 3 steps</span>
+    </div>
+    <pre><span class="cm"># 1. Fork & clone</span>
+git clone https://github.com/YOUR-USERNAME/pytrackio.git
+<span class="kw">cd</span> pytrackio && pip install -e . && pip install pytest pytest-cov
+
+<span class="cm"># 2. Create a branch & build</span>
+git checkout -b feature/async-track-support
+<span class="cm"># make your changes in pytrackio/ and tests/</span>
+python -m pytest tests/ -v   <span class="cm"># all must pass</span>
+
+<span class="cm"># 3. Submit your PR</span>
+git commit -m <span class="str">"feat: add async support for @track decorator"</span>
+git push origin feature/async-track-support
+<span class="cm"># then open a PR at github.com/danshu3007-lang/pytrackio</span></pre>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<div class="section">
+  <div class="cta">
+    <h3>Star it. Fork it. Ship it.</h3>
+    <p>Built by <strong style="color:var(--text)">Deepanshu</strong> — Data Analyst &amp; open source developer.<br>Contributions, issues, and PRs are always welcome.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href="https://github.com/danshu3007-lang/pytrackio" target="_blank">⭐ Star on GitHub</a>
+      <a class="btn btn-ghost" href="https://pypi.org/project/pytrackio/" target="_blank">PyPI →</a>
+      <a class="btn btn-ghost" href="https://github.com/danshu3007-lang/pytrackio/blob/main/CONTRIBUTING.md" target="_blank">Contributing guide →</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>⚡ pytrackio · MIT License · <a href="https://github.com/danshu3007-lang/pytrackio" target="_blank">github.com/danshu3007-lang/pytrackio</a></p>
+</footer>
+
+<script>
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===idx));
+}
+document.querySelector('.install-strip').addEventListener('click', function() {
+  navigator.clipboard.writeText('pip install pytrackio').then(() => {
+    const hint = this.querySelector('.copy-hint');
+    hint.textContent = 'copied!';
+    hint.style.color = '#4fd1c5';
+    setTimeout(() => { hint.textContent = 'click to copy'; hint.style.color = ''; }, 2000);
+  });
+});
+</script>
+</body>
+</html>
