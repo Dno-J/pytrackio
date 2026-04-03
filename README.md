@@ -1,10 +1,34 @@
 # ⚡ pytrackio
 
+<div align="center">
+
+### 🌐 Live Showcase & Docs
+
 [![Showcase](https://img.shields.io/badge/showcase-live-7c6af7?style=flat-square)](https://danshu3007-lang.github.io/pytrackio/)
 
-> 📖 **[View the full showcase & docs →](https://danshu3007-lang.github.io/pytrackio/)**
+**[👉 View the full interactive showcase →](https://danshu3007-lang.github.io/pytrackio/)**
+
+<br>
+
+### 🎬 Demo Video
+
+https://github.com/danshu3007-lang/pytrackio/raw/main/docs/demo.mp4
+
+<br>
+
+### 📸 Showcase Preview
+
+<a href="https://danshu3007-lang.github.io/pytrackio/">
+  <img src="https://danshu3007-lang.github.io/pytrackio/preview.png"
+       alt="pytrackio showcase"
+       onerror="this.style.display='none'"
+       width="100%">
+</a>
+
+</div>
 
 ---
+
 
 
 **The fastest way to add performance tracking to any Python project.**
