@@ -19,8 +19,14 @@ All 27 tests must pass before opening a PR.
 - Django / Flask middleware integration
 - `@track` support for class methods
 - `reset_after=N` parameter — auto-reset registry after N calls
-- Structured logging output (JSON lines format)
 - Histogram bucketing for latency distributions
+
+## Core API & Exporters
+When adding new ways to extract data, ensure they are added to `pytrackio/_report.py` and exposed in `__init__.py`.
+* `report()`: Visual CLI table output.
+* `export_json()`: Standard JSON object.
+* `export_jsonlines()`: One JSON object per line (ideal for Datadog/Loki).
+* `export_csv()`: Spreadsheet-compatible format.
 
 ## Pull request checklist
 

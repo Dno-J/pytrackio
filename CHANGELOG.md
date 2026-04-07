@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.3.0] — 2026-04-07
+
+### Added
+- **`export_jsonlines()`** — Added support for exporting metrics in JSON Lines format (one JSON object per line). This is designed for easy integration with log aggregation systems like Datadog, Loki, and Splunk.
+- New **`tests/test_export_jsonlines.py`** to ensure format validity and file-writing reliability.
+
+### Changed
+- Updated `README.md` with usage examples for JSON Lines exporting.
+- Updated `CONTRIBUTING.md` to reflect the completion of the structured logging task.
+
 ## [0.2.0] — 2026-03-31
 
 ### Added
