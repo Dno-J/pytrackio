@@ -1,8 +1,9 @@
 from ._registry import _REGISTRY, MetricSummary, MetricsRegistry
-from ._track import track
+from .core import track
 from ._timer import timer
 from ._report import report, export_json, export_csv, export_dict
 from .exporters import export_jsonlines
+
 
 def counter(name):
     return _REGISTRY.counter(name)

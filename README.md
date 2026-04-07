@@ -139,7 +139,28 @@ async with timer("external_api"):
 ```
 
 ---
+## Tracking Methods
+`@track` works out-of-the-box for instance, class, and static methods.
 
+```python
+class PaymentProcessor:
+    @track
+    def process(self, amount):  # Instance method
+        ...
+
+    @classmethod
+    @track
+    def get_supported_currencies(cls):  # Class method
+        ...
+
+    @staticmethod
+    @track
+    def validate_card(card_number):  # Static method
+        ...
+```
+
+
+---
 ### counter() - named event counters
 ```python
 from pytrackio import counter

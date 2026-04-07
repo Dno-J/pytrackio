@@ -12,10 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - **`export_jsonlines()`** — Added support for exporting metrics in JSON Lines format (one JSON object per line). This is designed for easy integration with log aggregation systems like Datadog, Loki, and Splunk.
 - New **`tests/test_export_jsonlines.py`** to ensure format validity and file-writing reliability.
+- Full support for tracking Class, Instance, and Static methods using `@track`.
+- Automatic namespacing in reports (e.g., `ClassName.method_name`) via `__qualname__`.
 
 ### Changed
 - Updated `README.md` with usage examples for JSON Lines exporting.
 - Updated `CONTRIBUTING.md` to reflect the completion of the structured logging task.
+- Refactored core decorator logic from `pytrackio/_track.py` to `pytrackio/core.py`.
 
 ## [0.2.0] — 2026-03-31
 
