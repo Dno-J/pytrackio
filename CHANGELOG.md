@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
+## [0.3.0] — 2026-04-08
+
+### Added
+- **Latency Histograms**: Support for tracking execution time distributions using the `histogram_buckets` parameter in the `@track` decorator.
+- **Export Utility**: Added `export_histogram()` to print formatted tables to the console and export data to JSON.
+- **Global Configuration**: Added `set_buckets()` to define default latency boundaries globally.
+
+### Changed
+- **Refactor**: Consolidated tracking logic into a universal decorator in `core.py` to support sync, async, and class methods more efficiently.
 
 ## [0.3.0] — 2026-04-07
 

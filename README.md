@@ -188,6 +188,21 @@ Returns the report as a string for logging or alerting.
 
 ---
 
+### Latency Histograms
+Track execution time distributions with customizable buckets:
+
+```python
+from pytrackio import track, export_histogram
+
+@track(histogram_buckets=[10, 100, 500])
+def my_function():
+    ...
+
+export_histogram() # Prints table to console
+export_histogram("metrics.json") # Saves to JSON
+```
+---
+
 ### Export data
 ```python
 from pytrackio import export_json, export_csv, export_dict
