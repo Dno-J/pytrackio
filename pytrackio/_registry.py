@@ -44,7 +44,10 @@ class MetricsRegistry:
         self._start = time.monotonic()
     def record(self, name, ms, error=False):
         with self._lock:
-            self._samples.setdefault(name, []).append(ms)
+            bucket = self._samples.setdefault(name, [])
+            if len(bucket) >= 1000:
+                bucket.pop(0)
+            bucket.append(ms)
             self._errors.setdefault(name, 0)
             if error: self._errors[name] += 1
     def counter(self, name):

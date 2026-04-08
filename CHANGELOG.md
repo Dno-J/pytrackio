@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.10.1] — 2026-04-08
+
+### Fixed
+- Version number now consistent across `pyproject.toml` and `__init__.py`
+- Memory leak in `MetricsRegistry` — `_samples` now capped at 1000 entries per metric
+
+## [0.10.0] — 2026-04-08
+
+### Added
+- `__qualname__` based metric naming — class methods now report as `ClassName.method_name`
+- Full support for `@classmethod`, `@staticmethod`, and instance methods via `@track`
+- `all_counters()` method on registry for bulk counter access
+- `export_dict()` includes counters in output
+
+### Changed
+- `@track` decorator refactored to use `_wrap()` helper for cleaner sync/async dispatch
+- `report()` now returns the report string in addition to printing it
+
+## [0.4.0] — 2026-04-07
+
+### Added
+- `async with timer()` support via `__aenter__` / `__aexit__`
+- `export_jsonlines()` now includes counters as separate JSON lines
+- `get_registry()` exported in public API via `__init__.py`
+- `MetricsRegistry` and `MetricSummary` exported for type hinting
+
+### Changed
+- `timer()` correctly records errors when exceptions occur inside async blocks
+
 ## [0.3.0] — 2026-04-07
 
 ### Added
