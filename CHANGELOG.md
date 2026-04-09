@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
+## [0.3.0] — 2026-04-08
+
+### Added
+- **Latency Histograms**: Support for tracking execution time distributions using the `histogram_buckets` parameter in the `@track` decorator.
+- **Export Utility**: Added `export_histogram()` to print formatted tables to the console and export data to JSON.
+- **Global Configuration**: Added `set_buckets()` to define default latency boundaries globally.
+
+### Changed
+- **Refactor**: Consolidated tracking logic into a universal decorator in `core.py` to support sync, async, and class methods more efficiently.
 
 ## [0.10.1] — 2026-04-08
 
@@ -41,10 +50,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - **`export_jsonlines()`** — Added support for exporting metrics in JSON Lines format (one JSON object per line). This is designed for easy integration with log aggregation systems like Datadog, Loki, and Splunk.
 - New **`tests/test_export_jsonlines.py`** to ensure format validity and file-writing reliability.
+- Full support for tracking Class, Instance, and Static methods using `@track`.
+- Automatic namespacing in reports (e.g., `ClassName.method_name`) via `__qualname__`.
 
 ### Changed
 - Updated `README.md` with usage examples for JSON Lines exporting.
 - Updated `CONTRIBUTING.md` to reflect the completion of the structured logging task.
+- Refactored core decorator logic from `pytrackio/_track.py` to `pytrackio/core.py`.
 
 ## [0.2.0] — 2026-03-31
 

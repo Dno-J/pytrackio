@@ -139,7 +139,28 @@ async with timer("external_api"):
 ```
 
 ---
+## Tracking Methods
+`@track` works out-of-the-box for instance, class, and static methods.
 
+```python
+class PaymentProcessor:
+    @track
+    def process(self, amount):  # Instance method
+        ...
+
+    @classmethod
+    @track
+    def get_supported_currencies(cls):  # Class method
+        ...
+
+    @staticmethod
+    @track
+    def validate_card(card_number):  # Static method
+        ...
+```
+
+
+---
 ### counter() - named event counters
 ```python
 from pytrackio import counter
@@ -165,6 +186,21 @@ report(colour=False)
 
 Returns the report as a string for logging or alerting.
 
+---
+
+### Latency Histograms
+Track execution time distributions with customizable buckets:
+
+```python
+from pytrackio import track, export_histogram
+
+@track(histogram_buckets=[10, 100, 500])
+def my_function():
+    ...
+
+export_histogram() # Prints table to console
+export_histogram("metrics.json") # Saves to JSON
+```
 ---
 
 ### Export data
